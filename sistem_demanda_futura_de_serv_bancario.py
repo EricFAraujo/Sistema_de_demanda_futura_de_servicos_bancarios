@@ -1,37 +1,36 @@
-# Importando bibliotecas
 import numpy as np
 import tensorflow as tf
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# Dados simulados - Demanda de serviços de TI e dados bancários
-ti_data = np.random.rand(100, 1) * 10  # Dados de TI (por exemplo, carga de servidores)
-bank_data = np.random.rand(100, 1) * 100  # Dados bancários (por exemplo, transações)
+# Dados simulados
+ti_data = np.random.rand(100, 1) * 10  # Dados de TI (carga de servidores)
+bank_data = np.random.rand(100, 1) * 100  # Dados bancários (transações)
 
 # Normalizando os dados
 ti_data = (ti_data - np.mean(ti_data)) / np.std(ti_data)
 bank_data = (bank_data - np.mean(bank_data)) / np.std(bank_data)
 
-# Criando a variável de resposta (demanda futura)
+# Criando a variável(demanda futura)
 future_demand = np.roll(bank_data, -1)
 future_demand[-1] = np.random.rand() * 100  # Último valor simulado
 
-# Dividindo os dados em conjuntos de treinamento e teste
+# Dividindo os dados em conjuntos
 train_size = int(len(ti_data) * 0.8)
 ti_train, ti_test = ti_data[:train_size], ti_data[train_size:]
 bank_train, bank_test = bank_data[:train_size], bank_data[train_size:]
 demand_train, demand_test = future_demand[:train_size], future_demand[train_size:]
 
-# Convertendo para tensores TensorFlow
+# Convertendo para TensorFlow
 ti_train_tf = tf.convert_to_tensor(ti_train, dtype=tf.float32)
 bank_train_tf = tf.convert_to_tensor(bank_train, dtype=tf.float32)
 demand_train_tf = tf.convert_to_tensor(demand_train, dtype=tf.float32)
 
-# Ajuste para garantir que os tensores tenham a dimensão correta
+# Ajustes caso apresente erro
 x_train_tf = tf.concat([ti_train_tf, bank_train_tf], axis=1)
 
-# Modelo TensorFlow
+# TensorFlow
 model_tf = tf.keras.Sequential([
     tf.keras.layers.Dense(10, activation='relu', input_shape=(2,)),
     tf.keras.layers.Dense(1)
@@ -42,7 +41,7 @@ model_tf.compile(optimizer='adam', loss='mse')
 # Treinamento do modelo TensorFlow
 model_tf.fit(x=x_train_tf, y=demand_train_tf, epochs=50)
 
-# Convertendo para tensores PyTorch
+# Convertendo para PyTorch
 ti_train_pt = torch.from_numpy(ti_train).float()
 bank_train_pt = torch.from_numpy(bank_train).float()
 demand_train_pt = torch.from_numpy(demand_train).float()
@@ -66,7 +65,7 @@ model_pt = DemandPredictor()
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model_pt.parameters(), lr=0.01)
 
-# Treinamento do modelo PyTorch
+# Treinamento do PyTorch
 for epoch in range(50):
     inputs = torch.cat([ti_train_pt, bank_train_pt], dim=1)
     outputs = model_pt(inputs)
@@ -80,7 +79,7 @@ for epoch in range(50):
 ti_test_tf = tf.convert_to_tensor(ti_test, dtype=tf.float32)
 bank_test_tf = tf.convert_to_tensor(bank_test, dtype=tf.float32)
 
-# Ajuste para garantir que os tensores de teste tenham a dimensão correta
+# Ajuste para corrigir erro no PyTorch
 x_test_tf = tf.concat([ti_test_tf, bank_test_tf], axis=1)
 
 predictions_tf = model_tf.predict(x_test_tf)
